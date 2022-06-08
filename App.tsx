@@ -1,20 +1,20 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+/* eslint-disable react/style-prop-object */
+import React from "react";
+import { StatusBar } from "expo-status-bar";
+import { NativeBaseProvider } from "native-base";
+import { View } from "react-native";
+import { NavigationContainer } from "@react-navigation/native";
+import { Home } from "./src/pages/home";
 
 export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
+   return (
+      <NavigationContainer>
+         <NativeBaseProvider>
+            <View style={{ flex: 1 }}>
+               <StatusBar style="dark" hidden />
+               <Home />
+            </View>
+         </NativeBaseProvider>
+      </NavigationContainer>
+   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
