@@ -2,7 +2,16 @@
 /* eslint-disable consistent-return */
 /* eslint-disable array-callback-return */
 import React, { useCallback } from "react";
-import { Text, Box, Center, HStack, FlatList, Button, Icon } from "native-base";
+import {
+   Text,
+   Box,
+   Center,
+   HStack,
+   FlatList,
+   Button,
+   Icon,
+   Modal,
+} from "native-base";
 import { TouchableOpacity } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import Async from "@react-native-async-storage/async-storage";
@@ -24,7 +33,40 @@ export function Home() {
    const [selectdate, setSelectDate] = React.useState(new Date());
    const [dados, setDados] = React.useState<Props[]>([]);
 
-   const handleImage = React.useCallback(async () => {
+   const [showModal, setShowModal] = React.useState(false);
+
+   const handleCamera = React.useCallback(async () => {
+      const result = await ImagePicker.launchCameraAsync({
+         mediaTypes: ImagePicker.MediaTypeOptions.All,
+         allowsEditing: true,
+         aspect: [4, 3],
+         quality: 1,
+      });
+
+      if (!result.cancelled) {
+         const mes = date.getMonth() + 1;
+
+         const dados = {
+            data: format(date, "dd"),
+            hora: format(date, "HH:mm"),
+            mes,
+            image: result.uri,
+         };
+
+         try {
+            const data = await Async.getItem("@ponto");
+            const current = data ? JSON.parse(data) : [];
+
+            const dataFormated = [...current, dados];
+
+            await Async.setItem("@ponto", JSON.stringify(dataFormated));
+         } catch (error) {
+            console.log(error);
+         }
+      }
+   }, [date]);
+
+   const handleLibrary = React.useCallback(async () => {
       const result = await ImagePicker.launchImageLibraryAsync({
          mediaTypes: ImagePicker.MediaTypeOptions.All,
          allowsEditing: true,
@@ -52,9 +94,6 @@ export function Home() {
          } catch (error) {
             console.log(error);
          }
-
-         const data = await Async.getItem("@ponto");
-         setLista(data ? JSON.parse(data) : "");
       }
    }, [date]);
 
@@ -107,6 +146,16 @@ export function Home() {
 
    return (
       <Box padding={5} w="100%" flex="1" bg="primary.900">
+         <Modal mt={20} isOpen={showModal} onClose={() => setShowModal(false)}>
+            <Box bg="blue.700" padding="5">
+               <Center>
+                  <HStack space={8}>
+                     <Button onPress={handleCamera}>camera</Button>
+                     <Button onPress={handleLibrary}>biblioteca</Button>
+                  </HStack>
+               </Center>
+            </Box>
+         </Modal>
          <Center mb={10}>
             <Text color="dark.900">MEUS PONTOS</Text>
          </Center>
@@ -146,7 +195,7 @@ export function Home() {
                )}
             />
          </Box>
-         <Button mt={5} onPress={handleImage}>
+         <Button mt={5} onPress={() => setShowModal(true)}>
             ADICIONAR
          </Button>
       </Box>
